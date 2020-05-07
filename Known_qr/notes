@@ -1,0 +1,5 @@
+Thompson Sampling
+trial1: delta=0.1, n_rounds = 4 x 200000
+trial2: delta=0.1, n_rounds = 20 x 15000
+trial3: delta=0.02, n_rounds = 4 x 200000
+trial4: delta=0.01, n_rounds = 100 x 25000

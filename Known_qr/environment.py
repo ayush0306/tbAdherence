@@ -2,9 +2,15 @@ import numpy as np
 from scipy.stats import bernoulli
 
 class Patient():
-	def __init__(self,index,p_adhere):
+	def __init__(self,index,p_adhere,p_tp,p_fp):
 		self.index = index
 		self.p_adhere = p_adhere
+		if(abs(p_tp-p_fp) <= 0.1):
+			p_tp = 0.55
+			p_fp = 0.45
+		self.p_fp = min(p_tp,p_fp)
+		self.p_tp = max(p_tp,p_fp)
+		self.p_call = self.p_adhere*self.p_tp + (1-self.p_adhere)*self.p_fp
 
 class Environment():
 	def __init__(self,n,k):
@@ -16,17 +22,23 @@ class Environment():
 		self.mu = 50
 		self.sigma = 25
 
+	def nearest_two(self,arr):
+		for i in range(len(arr)):
+			arr[i] = int(arr[i])/float(100)
+			arr[i] = min(arr[i],0.99)
+			arr[i] = max(0.01,arr[i])
+		return arr
+
 	def reset(self,j):
 		self.patients = []
 		np.random.seed(j)
 		s = np.random.normal(self.mu, self.sigma, self.n)
-		for i in range(self.n):
-			s[i] = int(s[i])/float(100)
-			s[i] = min(s[i],0.99)
-			s[i] = max(0.01,s[i])
+		q = np.random.random(self.n)*100
+		r = np.random.random(self.n)*100
+		s,q,r = self.nearest_two(s),self.nearest_two(q),self.nearest_two(r)
 
 		for i in range(self.n):
-			self.patients.append(Patient(i,s[i]))
+			self.patients.append(Patient(i,s[i],q[i],r[i]))
 		self.optimal_reward = self.get_optimal_reward()
 		print("Optimal Reward is : ", self.optimal_reward)
 
@@ -41,7 +53,7 @@ class Environment():
 		realizations = {}
 		for pat in self.patients:
 			if pat.index not in selected:
-				realizations[pat.index] = bernoulli.rvs(size=1,p=pat.p_adhere)[0]
+				realizations[pat.index] = bernoulli.rvs(size=1,p=pat.p_call)[0]
 		return realizations
 
 	def get_regret(self,selected):
@@ -56,8 +68,7 @@ class Environment():
 
 	def print_estimates(self):
 		for i in range(self.n):
-			print(self.patients[i].p_adhere,end=" ")
-		print()
+			print(i,self.patients[i].p_adhere,self.patients[i].p_tp,self.patients[i].p_fp,self.patients[i].p_call,sep=",")
 
 
 	# def generate_qualities(self,prod,quant):

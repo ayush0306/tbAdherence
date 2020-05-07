@@ -1,5 +1,5 @@
 import environment
-from learner1 import *
+from learner2 import *
 import matplotlib.pyplot as plt 
 import numpy as np
 import pickle
@@ -32,19 +32,20 @@ def saveVar(var,filename):
 
 # n,prob_adherence = get_inputs()
 # k = int(n/3)
-n = 25
-k = 10
+n = 10
+k = 9
 env = environment.Environment(n,k)
 
 nrounds = 100
-nsim = 10000
-suffix = "_" + str(n) + "_" + str(k) + "_" + str(learner_name) + "_v2"
+nsim = 25000
+suffix = "_" + str(n) + "_" + str(k) + "_" + str(learner_name) + "_trial4"
 
 regrets = np.array([0.0 for i in range(nsim)])
 count_arm = np.array([0.0 for i in range(n)])
 
 for j in range(nrounds):
 	env.reset(j*3+6)
+	env.print_estimates()
 	learner = LearnerAgent(env)
 	for i in range(nsim):
 		print("round no. ",j," iter no. ",i)
@@ -55,10 +56,11 @@ for j in range(nrounds):
 		realizations = env.realize(selection)
 		# print(realized_records,realized_calls)
 		learner.update(realizations,i)
-		env.print_estimates()
-		learner.print_estimates()
+		# env.print_estimates()
+		# learner.print_estimates()
 		regret = env.get_regret(selection)
 		print("regret: ",regret)
+		print()
 		regrets[i] = regrets[i]+regret
 learner.print_estimates()
 
